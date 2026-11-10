@@ -21,41 +21,59 @@ test.describe('CalificaUT', () => {
     await expect(page.getByTestId('estatus')).toHaveText('Aprobado');
   });
 
-  // Cuando completes una prueba, cambia "test.fixme" por "test".
-
   // CP-02 · 6, 7 y 5 deben dar 6.0 y "Reprobado"
-  test.fixme('CP-02 promedio menor a 8 es Reprobado', async ({ page }) => {
-    // TODO 1: captura 6, 7 y 5 con la función capturar(...)
-    // TODO 2: verifica que el promedio sea "6.0"
-    // TODO 3: verifica que el estatus sea "Reprobado"
+  test('CP-02 promedio menor a 8 es Reprobado', async ({ page }) => {
+    await capturar(page, '6', '7', '5');
+
+    await expect(page.getByTestId('promedio')).toHaveText('6.0');
+    await expect(page.getByTestId('estatus')).toHaveText('Reprobado');
   });
 
   // CP-03 · Valor límite: un promedio de exactamente 8 debe ser "Aprobado"
-  test.fixme('CP-03 promedio exactamente 8 es Aprobado', async ({ page }) => {
-    // TODO 1: captura 8, 8 y 8
-    // TODO 2: verifica que el promedio sea "8.0"
-    // TODO 3: verifica que el estatus sea "Aprobado"
+  test('CP-03 promedio exactamente 8 es Aprobado', async ({ page }) => {
+    await capturar(page, '8', '8', '8');
+
+    await expect(page.getByTestId('promedio')).toHaveText('8.0');
+    await expect(page.getByTestId('estatus')).toHaveText('Aprobado');
   });
 
   // CP-04 · Una calificación mayor a 10 debe rechazarse
-  test.fixme('CP-04 rechaza calificaciones fuera de 0 a 10', async ({ page }) => {
-    // TODO 1: captura 11, 9 y 9
-    // TODO 2: verifica el mensaje con page.getByRole('alert'):
-    //         "Captura las tres calificaciones entre 0 y 10"
-    // TODO 3: verifica que el promedio quede vacío: toHaveText('')
+  test('CP-04 rechaza calificaciones fuera de 0 a 10', async ({ page }) => {
+    await capturar(page, '11', '9', '9');
+
+    await expect(page.getByRole('alert')).toHaveText('Captura las tres calificaciones entre 0 y 10');
+    await expect(page.getByTestId('promedio')).toHaveText('');
   });
 
   // CP-05 · Si no se captura nada debe aparecer el mensaje de error
-  test.fixme('CP-05 sin calificaciones muestra el mensaje de error', async ({ page }) => {
-    // TODO 1: presiona "Calcular" sin capturar nada
-    // TODO 2: verifica el mensaje de error
+  test('CP-05 sin calificaciones muestra el mensaje de error', async ({ page }) => {
+    await page.getByRole('button', { name: 'Calcular' }).click();
+
+    await expect(page.getByRole('alert')).toHaveText('Captura las tres calificaciones entre 0 y 10');
   });
 
   // CP-06 · "Limpiar" debe borrar los campos y el resultado
-  test.fixme('CP-06 Limpiar borra campos y resultado', async ({ page }) => {
-    // TODO 1: captura 9, 9 y 9
-    // TODO 2: presiona el botón "Limpiar"
-    // TODO 3: verifica que "Parcial 1" quede vacío: toHaveValue('')
-    // TODO 4: verifica que el promedio y el estatus queden vacíos
+  test('CP-06 Limpiar borra campos y resultado', async ({ page }) => {
+    await capturar(page, '9', '9', '9');
+    await page.getByRole('button', { name: 'Limpiar' }).click();
+
+    await expect(page.getByLabel('Parcial 1')).toHaveValue('');
+    await expect(page.getByTestId('promedio')).toHaveText('');
+    await expect(page.getByTestId('estatus')).toHaveText('');
+  });
+
+  // CP-07 · (extra) RF-02: el estatus se decide con el promedio redondeado
+  test('CP-07 estatus usa el promedio redondeado (7.9, 8, 8 → 8.0 Aprobado)', async ({ page }) => {
+    await capturar(page, '7.9', '8', '8');
+
+    await expect(page.getByTestId('promedio')).toHaveText('8.0');
+    await expect(page.getByTestId('estatus')).toHaveText('Aprobado');
+  });
+
+  // CP-08 · (extra) RF-05: el folio tiene formato CAL-
+  test('CP-08 genera folio con formato CAL-', async ({ page }) => {
+    await capturar(page, '9', '9', '9');
+
+    await expect(page.getByTestId('folio')).toHaveText(/^CAL-\d+$/);
   });
 });
